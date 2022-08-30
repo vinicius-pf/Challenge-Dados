@@ -155,7 +155,7 @@ img 6
 
 Há 1213 valores nulos, além de valores estranhos. Como se trata de tempo de serviço, há dois valores em que a coluna está maior que a coluna de idade, o que não deveria ser permitido, por isso os dados serão excluidos da tabela.
 
-````sql
+```sql
 SELECT * FROM DADOS_MUTUARIOS WHERE person_emp_length > person_age
 ```
 
