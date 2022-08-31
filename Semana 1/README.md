@@ -169,10 +169,125 @@ Os dados em branco receberam o mesmo tratamento da coluna `person_age`. Novament
 
 ### Tabela `emprestimos`
 
+#### Coluna
+
+```sql
+```
+
+img 8
+
+#### Coluna
+```sql
+```
+
+img 9
+
+#### Coluna
+
+```sql
+```
+
+img 10
+
+#### Coluna
+
+```sql
+```
+
+#### Coluna
+
+```sql
+```
+
+img 11
+
+#### Coluna
+
+```sql
+```
+
+img 12
+
+#### Coluna
+
+```sql
+```
+
+img 13
+
+
 ### Tabela `historicos_banco`
+
+#### Coluna
+
+```sql
+```
+img 14
+
+
+#### Coluna
+
+```sql
+```
+
+img 15
+
+#### Coluna
+
+```sql
+```
+
+
 
 ### Tabela `id`
 
+Primeiro tentei fazer as chaves estrangeiras, depois deu erro porque o tinha duplicata. Teve que deletar 571 coisas.
+
+```sql
+```
+img 16
+
+Depois de fazer isso e deletar, deu de fazer as chaves estrangeiras
+
+```sql
+ALTER TABLE id
+ADD CONSTRAINT FK_DADOS_MUTUARIOS 
+FOREIGN KEY (person_id) REFERENCES dados_mutuarios (person_id);
+
+ALTER TABLE id
+ADD CONSTRAINT FK_EMPRESTIMOS
+FOREIGN KEY (loan_id) REFERENCES emprestimos (loan_id);
+
+
+ALTER TABLE id
+ADD CONSTRAINT FK_HISTORICOS_BANCO
+FOREIGN KEY (cb_id) REFERENCES historicos_banco (cb_id);
+```
+
+img 17
+
+Com isso o relacionamento correto foi configurado no sistema
+
+img 18
+
+
+### Próximos passos
+Depois da criação das chaves secundárias, podemos passar para a união das tabelas e conferir o que faltou nas colunas ``,``,``,`` e ``.
+
 ## Unindo tabelas
+
+Para unir as tabelas, foram utilizadas as chaves primária e estrangeiras. Para isso se seguiu o relacionamento
+
+Para unir as tabelas, foi criada uma tabela que receberá os valores.
+
+```sql
+
+```
+
+14381 registros totais
+
+##Traduzindo
+
+usei rename
 
 ## Exportando 'csv'
