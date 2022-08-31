@@ -1,8 +1,8 @@
 USE analise_risco;
 
 #Verificando o import
-SELECT * FROM emprestimos;
 SELECT * FROM dados_mutuarios;
+SELECT * FROM emprestimos;
 SELECT * FROM historicos_banco;
 SELECT * FROM id;
 
