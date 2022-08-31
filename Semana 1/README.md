@@ -272,7 +272,7 @@ img 18
 
 
 ### Próximos passos
-Depois da criação das chaves secundárias, podemos passar para a união das tabelas e conferir o que faltou nas colunas ``,``,``,`` e ``.
+Depois da criação das chaves secundárias, podemos passar para a união das tabelas e conferir o que faltou nas colunas ,`erer`,`erer`,`erer` e `erer`.
 
 ## Unindo tabelas
 
@@ -286,8 +286,23 @@ Para unir as tabelas, foi criada uma tabela que receberá os valores.
 
 14381 registros totais
 
-##Traduzindo
+##Corrigindo
 
+### Traduzindo colunas
 usei rename
+
+### Traduzindo registros
+
+### Encontrando valores em branco
+
+#### coluna `renda_percentual`
+Corrigiu os que dava, os que não deu, deletou: 27
+
+#### coluna `salario anual`
+Corrigiu os que dava, os que não deu, deletou: 11
+
+#### coluna `valor emprestimo`
+Corrigiu o que dava e acabou com os nulos
+
 
 ## Exportando 'csv'
