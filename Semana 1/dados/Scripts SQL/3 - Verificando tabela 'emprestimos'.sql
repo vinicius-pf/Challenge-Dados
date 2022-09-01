@@ -11,15 +11,12 @@ PRIMARY KEY (loan_id);
 
 
 #Verificando a coluna 'loan_intent'
-SELECT loan_intent, COUNT(loan_intent) FROM emprestimos GROUP BY loan_intent; 
-SELECT * FROM emprestimos WHERE loan_intent = ''; 
-
+SELECT loan_intent, COUNT(loan_intent) FROM emprestimos GROUP BY loan_intent;
 DELETE FROM emprestimos WHERE loan_intent = '';
 
 
 #Verificando a coluna 'loan_grade'
 SELECT loan_grade, COUNT(loan_grade) FROM emprestimos GROUP BY loan_grade;
-
 DELETE FROM emprestimos WHERE loan_grade = '';
 
 
