@@ -1,10 +1,12 @@
-# Semana 1
+# Semana 1 - Tratamento de Dados
 
 Para a primeira semana do challenge, a empresa disponibilizou uma cópia dump do banco de dados da empresa com as informações de alguns dados dos clientes em conjunto com um dicionário descrevendo os valores de cada coluna. Esses dados foram disponibilizados via [trello](https://trello.com/b/wjOlcef2/challenge-dados-semana-1), que também possui demandas feitas pela empresa a respeito dos dados.
 
+Esses dados serão estudados e tratados de acordo com as demandas da empresa. Após o tratamento dos dados, eles serão exportados para um arquivo do tipo `.csv` que será utilizado para outras etapas do projeto.
+
 ## Conhecendo os dados
 
-Após o dump do banco de dados ser recuperado, foram feitas query sql.
+Com o [dump](https://github.com/vinicius-pf/Challenge-Dados/blob/Semana_1/Semana%201/dados/dump/Dump.sql) da base de dados recuperada, o primeiro passo foi conferir a integridade das informações disponibilizadas por meio de análises nas tabelas com o auxílio do [dicionário de dados disponibilizado](https://github.com/vinicius-pf/Challenge-Dados/blob/Semana_1/Semana%201/dados/Dicionario.md) pela empresa. Com as *queries* usadas, foi possível entender alguns pontos
 
 ```sql
 select * from emprestimos;
@@ -16,49 +18,48 @@ select * from historicos_banco;
 select * from id;
 ```
 
-O resultado das queries foi verificado em conjunto com o dicionário para cada tabela. isso ajudou a entender alguns pontos. 
-
 ### Tabela `dados_mutuarios`
 
-Essa tabela contém os dados pessoais de cada solicitante. Ela possue 34489 registros e 5 colunas.
+A primeira tabela do banco de dados possui 34489 registros e 5 colunas com informações a respeito dos clientes da empresa.
 
 | Feature | Descrição | Característica
 | --- | --- | --- |
-|`person_id` |ID da pessoa solicitante| Chave primária do tipo `varchar(16)`. Não possue valores em branco
-|`person_age` | Idade da pessoa - em anos - que solicita empréstimo | Tipo `int`. Há pessoas com idade superior a 100 anos.
-|`person_income` | Salário anual da pessoa solicitante | Tipo `int`. Há valores em branco
-|`person_home_ownership` | Situação da propriedade que a pessoa possui| A empresa informou que haviam 4 valores distintos do tipo `varchar(8)`. Essa coluna apresenta valores vazios.
-|`person_emp_length` | Tempo - em anos - que a pessoa trabalhou | Tipo `double`. Há casos com 123 anos trabalhados e valores em branco.
+|`person_id` |ID da pessoa solicitante| Chave primária do tipo `varchar(16)`. Não possui valores em branco.
+|`person_age` | Idade da pessoa - em anos - que solicita empréstimo | Coluna do tipo `int` com *outliers*.
+|`person_income` | Salário anual da pessoa solicitante | Coluna do tipo `int`e com valores em branco. É utilizada para o calculo da coluna `loan_percent_income`.
+|`person_home_ownership` | Situação da propriedade que a pessoa possui| Coluna do tipo `varchar(8)` com 4 valores distintos e valores em branco.
+|`person_emp_length` | Tempo - em anos - que a pessoa trabalhou | Coluna do tipo `double` contendo valores em branco e *outliers*.
 
-A coluna `person_id` não está sendo considerada como uma chave primária da tabela, o que é necessário. Além disso, é necessário entender melhor a tabela para se definir como serão tratados os dados faltantes e os *outliers* descobertos..
+A coluna `person_id` não está sendo considerada como uma chave primária da tabela, o que é necessário. Além disso, é necessário entender melhor a tabela para se definir como serão tratados os dados faltantes e os *outliers* descobertos.
 
 ### Tabela `emprestimos`
 
-Essa tabela contém informações de cada empréstimo solicitado. Ela possue 34489 registros e 7 colunas.
+A segunda tabela presente no banco de dados possue informações de cada empréstimo solicitado. Ela possui 34489 registros e 7 colunas.
 
 | Feature | Descrição | Característica
 | --- | --- | --- |
-|`loan_id`| ID da solicitação de empréstico de cada solicitante | Chave primária do tipo `varchar(16)`
-|`loan_intent` | Motivo do empréstimo| Há 6 valores do tipo `varchar(32)` distintos e a coluna possue valores vazios.
-|`loan_grade` | Pontuação de empréstimos | Há 7 níveis distintos do tipo `varchar(1)` e há valores em branco.
-|`loan_amnt` | Valor total do empréstimo solicitado | Uma coluna do tipo `int` possuindo valores nulos
-|`loan_int_rate` | Taxa de juros | Uma coluna `double` possuindo valores nulos
-|`loan_status` | Possibilidade de inadimplência | Coluna `int` com registros nulos.
-|`loan_percent_income` | Renda percentual entre o *valor total do empréstimo* e o *salário anual* | Coluna `double` com valores nulos
+|`loan_id`| ID da solicitação de empréstico de cada solicitante | Chave primária do tipo `varchar(16)`. Não possui valores em branco.
+|`loan_intent` | Motivo do empréstimo| Coluna do tipo `varchar(32)`, com 6 valores distintos e valores em branco.
+|`loan_grade` | Pontuação de empréstimos | Coluna do tipo `varchar(1)`, com 7 níveis distintos e valores em branco.
+|`loan_amnt` | Valor total do empréstimo solicitado | Coluna do tipo `int` contendo valores em branco.  É utilizada para o calculo da coluna `loan_percent_income`.
+|`loan_int_rate` | Taxa de juros | Coluna do tipo `double` contendo valores em branco.
+|`loan_status` | Possibilidade de inadimplência | Coluna do tipo `int` contendo valores em branco.
+|`loan_percent_income` | Renda percentual entre o *valor total do empréstimo* e o *salário anual* | Coluna do tipo `double` com valores nulos. Pode ser calculada com as outras colunas
 
-Novamente a coluna que deveria ser a chave primária não está configurada como tal na tabela. Também é necessária uma análise mais detalhada para entender os valores faltantes.  
+Novamente a coluna que deveria ser a chave primária não está configurada corretamente na tabela. Também é necessária uma análise mais detalhada para entender os valores faltantes.  
 
 ### Tabela `historicos_banco`
 
-Essa tabela detalha os dados dos empréstimo de cada cliente. Ela possue 34489 registros e 3 colunas.
+A terceira tabela do banco de dados 34489 registros e 3 colunas a respeito dos empréstimos realizados pela empresa.
+
 
 | Feature | Descrição | Característica
 | --- | --- | --- |
-|`cb_id`|ID do histórico de cada solicitante| Chave primária da tabela. Não contém valores únicos.
+|`cb_id`|ID do histórico de cada solicitante| Chave primária da tabela do tipo `varchar(16)`. Não contém valores únicos.
 |`cb_person_default_on_file` | Indica se a pessoa já foi inadimplente| Coluna do tipo `varchar(1)` com 2 valores distintos e valores em branco
-|`cb_person_cred_hist_length` | Tempo - em anos - desde a primeira solicitação de crédito ou aquisição de um cartão de crédito | Coluna tipo `int` com um valor em branco.
+|`cb_person_cred_hist_length` | Tempo - em anos - desde a primeira solicitação de crédito ou aquisição de um cartão de crédito | Coluna dotipo `int` e com valores em branco.
 
-A primeira coluna necessita ser configurada como chave primária. Além disso, as outras colunas também requerem atenção para efetuar o melhor tratamento.
+Além do tratamento da coluna que será a chave primária, também há a necessidade de entender os valores faltantes nas outras colunas.
 
 ### Tabela `id`
 
@@ -70,21 +71,20 @@ Essa tabela relaciona os IDs de cada tabela. Ela contém 14952 registros e 3 col
 |`loan_id`|ID da solicitação de empréstico de cada solicitante| Chave estrangeira relacionada com `emprestimos` com valores `text`
 |`cb_id`|ID do histórico de cada solicitante| Chave estrangeira relacionada com `historicos_banco` com valores `text`
 
-Essa tabela precisa receber as chaves primárias das outras tabelas e armazenar como chaves estrangeiras.
+O tipo das colunas não corresponde aos tipos das colunas nas outras tabelas, o que precisará ser corrigido. Além disso, as colunas devem ser chaves estrangeiras para corrigir o relacionamento do banco de dados.
 
-Após a conclusão da análise das tabelas, percebeu-se a necessidade de tratamento dos dados dentro das tabelas, além de acrescentar chaves nas tabelas. 
 
 ## Verificando e corrigindo inconsistências
 
-Após a análise, foi possível investigar mais a fundo cada tabela para que as inconsistências fossem encontradas e tratadas da melhor maneira.
+Com as primeiras análises concluídas, pode-se começar a próxima etapa. Nessa etapa as colunas serão conferidas individualmente para corrigir dados faltantes ou com informações que não poderiam ser consideradas.
 
 ### Tabela `dados_mutuarios`
 
 #### Coluna `person_id`
 
-Primeiramente foi tentada a criação da chave primária para a tabela. No entanto ocorreu um erro.
+A coluna deve ser configurada como chave primária da tabela. No entanto, ao criar e executar a *query* SQL para isso, ocorreu um erro. 
 
-img 1
+![1](https://user-images.githubusercontent.com/6025360/187917589-784df3cd-114b-4bea-92b2-26258d4427c2.png)
 
 Esse erro se deu pelo fato de haver 4 registros com essa coluna em branco. Nesse caso, por se tratar de um número muito pequeno em relação a quantidade de registros da tabela, esses registros serão deletados e depois será definida a chave primária.
 
@@ -92,7 +92,7 @@ Esse erro se deu pelo fato de haver 4 registros com essa coluna em branco. Nesse
 SELECT * FROM DADOS_MUTUARIOS where person_id = '';
 ```
 
-img 2
+![2](https://user-images.githubusercontent.com/6025360/187917633-0fe8057c-8218-4ed3-83cc-3c79f1ed5ccf.png)
 
 ```sql
 DELETE FROM DADOS_MUTUARIOS WHERE PERSON_ID = '';
@@ -103,13 +103,15 @@ PRIMARY KEY (person_id);
 
 #### Coluna `person_age`
 
-Como a coluna possui registros nulos, é necessário entender o motivo dos dados estarem faltando. Para isso, podemos utilizar uma outra coluna do dataset e comparar a frequência de ocorrencia dos valores dessa outra coluna. Para isso, foi utilizada a coluna `person_home_ownership`. Primeiro foi efetuada a consulta com todos os valores para saber qual a frequencia global
+Primeiramente é necessário entender os valores nulos presentes na coluna. Aparentemente esses dados podem ser considerados como MCAR(Missing Completely at Random), o que será confirmado ao se comparar a distribuição de frequências.
+
+Para confirmar o caso, é necessário comparar a frequência de registros de uma coluna no dataset completo com a frequência da mesma coluna considerando apenas os valores em branco. A coluna utilizada será a `person_home_ownership`. Primeiro foi efetuada a consulta com todos os valores para saber qual a frequencia global
 
 ```sql
 SELECT person_home_ownership, COUNT(person_home_ownership) FROM DADOS_MUTUARIOS GROUP BY person_home_ownership; 
 ```
 
-img 3
+![3](https://user-images.githubusercontent.com/6025360/187920100-c1e77040-c88f-466e-b5fb-bcea63e70d82.png)
 
 Após isso, foi efetuada a query novamente, dessa vez com filtro considerando apenas os usuários com registros vazios.
 
@@ -117,7 +119,7 @@ Após isso, foi efetuada a query novamente, dessa vez com filtro considerando ap
 SELECT person_home_ownership, COUNT(person_home_ownership) FROM DADOS_MUTUARIOS where person_age IS NULL GROUP BY person_home_ownership; 
 ```
 
-img 4
+![4](https://user-images.githubusercontent.com/6025360/187920143-3ea1fa1e-4400-495c-8b28-77753d90f235.png)
 
 Comparando os valores, percebeu-se que os dados possuem distribução parecida com o dado completo. Por conta disso, os dados serão considerados como MCAR e serão excluidos do banco de dados. 
 
@@ -125,13 +127,13 @@ Comparando os valores, percebeu-se que os dados possuem distribução parecida c
 DELETE FROM dados_mutuarios WHERE person_age IS NULL;
 ```
 
-Ao verificar as idades das pessoas, se percebeu que há valores que podem estar errados. Há pessoas no sistema com 144 e 123 anos, o que pode indicar erro de digitação. Como são 5 registros, esses também serão excluidos do sistema
+Além dos dados faltantes, também há valores que podem estar equivocados. Há pessoas no sistema com 144 e 123 anos, o que pode indicar erro de digitação. Como são 5 registros, esses também serão excluidos do sistema
 
 ```sql
 SELECT person_age, COUNT(person_age) AS CONTAGEM FROM dados_mutuarios GROUP BY person_age ORDER BY person_age DESC
 ```
 
-img 5
+![5](https://user-images.githubusercontent.com/6025360/187920404-5ceea8ba-452b-4105-911c-2b211edbe5a8.png)
 
 ```sql
 DELETE FROM dados_mutuarios	WHERE person_age > 120
@@ -139,33 +141,42 @@ DELETE FROM dados_mutuarios	WHERE person_age > 120
 
 #### Coluna `person_income`
 
-Ao se fazer a mesma estratégia da coluna anterior, a frequencia trazida foi diferente da apresentada pelo total. Isso significa que pode haver algum fator fazendo com que esses dados estejam em branco. Por enquanto esses valores serão mantidos na tabela.
+A coluna apresenta valores em branco. Porém, por se tratar de uma coluna que pode ser calculada se baseando em colunas da tabela `emprestimos`, esses dados serão mantidos e tratados novamente quando as tabelas forem unidas.
+
+```sql
+SELECT SUM(CASE WHEN person_income is null THEN 1 ELSE 0 END) AS 'Valores Nulos', COUNT(person_income) AS 'Valores Não Nulos'
+FROM DADOS_MUTUARIOS;
+```
+
+img ??
 
 #### Coluna `person_home_ownership`
 
-Essa coluna possue 4 valores distintos: `Rent`,`Mortgage`,`Own` e `Other`. Além disso, há dados em branco nessa coluna também que precisam ser tratados. Como a categoria `Other` existe, os dados em branco serão trocados para essa categoria. Como existem mais dados em branco do que dados da categoria `Other`, pode existir um conflito ou um problema no momento das análises gráficas.
+Essa coluna possue 4 valores distintos: `Rent`,`Mortgage`,`Own` e `Other`. Além disso, há dados em branco nessa coluna também que precisam ser tratados. Como a categoria `Other` existe, os dados em branco serão trocados para essa categoria. Essa escolha pode trazer problemas futuros, tendo em vista que há mais valores em branco que os da categoria `Other`. Isso será informado à empresa e caso necessário a etapa será refeita.
 
 ```sql
 UPDATE dados_mutuarios SET person_home_ownership = 'Other' WHERE person_home_ownership = '';
 ```
 
-img 6
+![6](https://user-images.githubusercontent.com/6025360/187922757-4f6e60c5-8d30-4325-8302-fb7d62d057de.png)
 
 #### Coluna 'person_emp_length'
 
-Há 1213 valores nulos, além de valores estranhos. Como se trata de tempo de serviço, há dois valores em que a coluna está maior que a coluna de idade, o que não deveria ser permitido, por isso os dados serão excluidos da tabela.
+Nessa coluna há 1213 valores nulos, além de valores que não deviam ser possíveis. Há casos em que essa coluna, que mostra o tempo de serviço do cliente, é maior que a coluna idade. Como essa característica aparece só em 2 casos, eles serão excluídos da base de dados.
 
 ```sql
 SELECT * FROM DADOS_MUTUARIOS WHERE person_emp_length > person_age
 ```
 
-img 7
+![7](https://user-images.githubusercontent.com/6025360/187924026-59e1a99b-395e-490a-951d-47b853b7dc0e.png)
 
 ```sql
 DELETE FROM dados_mutuarios	WHERE person_emp_length > person_age;
 ```
 
-Os dados em branco receberam o mesmo tratamento da coluna `person_age`. Novamente, por não apresentar uma frequencia parecida com a original, os dados em branco estão mantidos até reavaliados.
+Os dados em branco foram avaliados, porém não apresentaram motivo para exclusão.
+
+img ??
 
 ### Tabela `emprestimos`
 
@@ -309,7 +320,7 @@ img 18
 
 
 ### Próximos passos
-Depois da criação das chaves secundárias, podemos passar para a união das tabelas e conferir o que faltou nas colunas ``,``,`erer` e `erer`.
+Depois da criação das chaves secundárias, podemos passar para a união das tabelas e conferir o que faltou nas colunas `person_income`,``,`erer` e `erer`.
 
 ## Unindo tabelas
 
