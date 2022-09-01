@@ -169,46 +169,75 @@ Os dados em branco receberam o mesmo tratamento da coluna `person_age`. Novament
 
 ### Tabela `emprestimos`
 
-#### Coluna
+#### Coluna `loan_id`
+
+Essa coluna é a chave primária, então necessitou garantir que não haviam valores em branco ou duplicados. Após isso, a coluna foi definida como chave primária.
 
 ```sql
+ALTER TABLE emprestimos ADD CONSTRAINT 
+PRIMARY KEY (loan_id);
+```
+
+
+#### Coluna `loan_intent`
+
+Ha coluna possue categorias de escolhas, contendo valores em branco. Esses valores são 312 regisros e serão excluidos sistema.  
+
+```sql
+SELECT loan_intent, COUNT(loan_intent) FROM emprestimos GROUP BY loan_intent; 
+DELETE FROM emprestimos WHERE loan_intent = '';
 ```
 
 img 8
 
-#### Coluna
+#### Coluna `loan_grade`
+
+Assim como a anterior, essa possue poussue 310 regisros em branco que serão excluídos.
+
 ```sql
+SELECT loan_grade, COUNT(loan_grade) FROM emprestimos GROUP BY loan_grade;
 ```
 
 img 9
 
-#### Coluna
+
+#### Coluna `loan_amnt`
+
+Essa coluna possue valores vazios. No entanto, ela pode ser calculada considerando-se outras colunas. Isso será feito após a união de todas as tabelas.
 
 ```sql
+SELECT SUM(CASE WHEN loan_amnt is null THEN 1 ELSE 0 END) AS 'Valores Nulos', COUNT(loan_amnt) AS 'Valores Não Nulos'
+FROM emprestimos;
 ```
 
-img 10
+img 10 
 
-#### Coluna
 
-```sql
-```
+#### Coluna `loan_int_rate`
 
-#### Coluna
+Assim como a coluna anterior, essa coluna valores vazios. Porém eles compõe uma parte grande da base de dados, por isso serão mantidos no sistema.
 
 ```sql
+SELECT SUM(CASE WHEN loan_int_rate is null THEN 1 ELSE 0 END) AS 'Valores Nulos', COUNT(loan_int_rate) AS 'Valores Não Nulos'
+FROM emprestimos;
 ```
 
 img 11
 
-#### Coluna
+#### Coluna `loan_status`
+
+Essa coluna possue valores nulos que não podem ser calculados. 325 deles. por isso eles serão deletados
 
 ```sql
+SELECT SUM(CASE WHEN loan_status is null THEN 1 ELSE 0 END) AS 'Valores Nulos', COUNT(loan_status) AS 'Valores Não Nulos'
+FROM emprestimos;
 ```
 
 img 12
 
-#### Coluna
+#### Coluna `loan_percent_income`
+
+Mais uma coluna calculável com valores nulos que serão tratados posteriormente.
 
 ```sql
 ```
@@ -218,25 +247,33 @@ img 13
 
 ### Tabela `historicos_banco`
 
-#### Coluna
+#### Coluna `cb_id`
+
+Coluna que foi definida como chave primária do sistema
 
 ```sql
+ALTER TABLE historicos_banco ADD CONSTRAINT 
+PRIMARY KEY (cb_id);
 ```
+
+#### Coluna `cb_person_default_on_file`
+
+Coluna com valorews em branco que foram deletados.
+
+```sql
+SELECT cb_person_default_on_file, COUNT(cb_person_default_on_file) FROM historicos_banco GROUP BY cb_person_default_on_file; 
+DELETE FROM historicos_banco WHERE cb_person_default_on_file = '';
+```
+
 img 14
 
-
-#### Coluna
+#### Coluna `cb_person_cred_hist_length`
+Havia apenas um valor nulo que foi excluido
 
 ```sql
 ```
 
 img 15
-
-#### Coluna
-
-```sql
-```
-
 
 
 ### Tabela `id`
@@ -272,7 +309,7 @@ img 18
 
 
 ### Próximos passos
-Depois da criação das chaves secundárias, podemos passar para a união das tabelas e conferir o que faltou nas colunas ,`erer`,`erer`,`erer` e `erer`.
+Depois da criação das chaves secundárias, podemos passar para a união das tabelas e conferir o que faltou nas colunas ``,``,`erer` e `erer`.
 
 ## Unindo tabelas
 
@@ -281,28 +318,71 @@ Para unir as tabelas, foram utilizadas as chaves primária e estrangeiras. Para 
 Para unir as tabelas, foi criada uma tabela que receberá os valores.
 
 ```sql
-
+CREATE TABLE dados_inner (SELECT * FROM dados_mutuarios dm 
+INNER JOIN id id USING (person_id)
+INNER JOIN emprestimos em USING (loan_id) 
+INNER JOIN historicos_banco hb USING (cb_id))
 ```
 
 14381 registros totais
 
 ##Corrigindo
 
-### Traduzindo colunas
+### Traduzindo 
 usei rename
 
-### Traduzindo registros
+```sql
+ALTER TABLE dados_inner
+RENAME COLUMN cb_id TO hb_id,
+RENAME COLUMN loan_id to em_id,
+RENAME COLUMN person_id TO dm_id,
+RENAME COLUMN person_age TO idade_pessoa,
+RENAME COLUMN person_income TO salario_anual,
+RENAME COLUMN person_home_ownership TO tipo_imovel,
+RENAME COLUMN person_emp_length TO anos_trabalhados,
+RENAME COLUMN loan_intent TO motivo_emprestimo,
+RENAME COLUMN loan_grade TO pontuacao_emprestimo,
+RENAME COLUMN loan_amnt TO valor_emprestimo,
+RENAME COLUMN loan_int_rate TO taxa_juros,
+RENAME COLUMN loan_status TO possibilidade_inadimplencia,
+RENAME COLUMN loan_percent_income TO renda_percentual,
+RENAME COLUMN cb_person_default_on_file TO foi_inadimplente,
+RENAME COLUMN cb_person_cred_hist_length TO anos_primeiro_emprestimo;
+```
+
+Apesar do nome das colunas ter sido traduzido, os registros em lingua inglesa não foram. Isso será efetuado quando a empresa requisitar as visualizações.
 
 ### Encontrando valores em branco
 
 #### coluna `renda_percentual`
 Corrigiu os que dava, os que não deu, deletou: 27
 
+```sql
+UPDATE dados_inner SET	renda_percentual = valor_emprestimo / salario_anual 
+where renda_percentual is null and valor_emprestimo is not null and salario_anual is not null;
+
+DELETE FROM dados_inner where renda_percentual is null;
+```
+
 #### coluna `salario anual`
 Corrigiu os que dava, os que não deu, deletou: 11
 
+```sql
+UPDATE dados_inner SET	salario_anual = valor_emprestimo / renda_percentual 
+where salario_anual is null and valor_emprestimo is not null and renda_percentual is not null;
+
+DELETE FROM dados_inner where salario_anual is null;
+```
+
 #### coluna `valor emprestimo`
 Corrigiu o que dava e acabou com os nulos
+```sql
+UPDATE dados_inner SET	salario_anual = valor_emprestimo / renda_percentual 
+where salario_anual is null and valor_emprestimo is not null and renda_percentual is not null;
 
+DELETE FROM dados_inner where salario_anual is null;
+```
 
 ## Exportando 'csv'
+
+Após a transformação dos dados, a tabela foi exporta para um arquivo csv que servirá como base para as visualizações futuras.
