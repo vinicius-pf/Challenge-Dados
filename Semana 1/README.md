@@ -182,85 +182,86 @@ img ??
 
 #### Coluna `loan_id`
 
-Essa coluna é a chave primária, então necessitou garantir que não haviam valores em branco ou duplicados. Após isso, a coluna foi definida como chave primária.
+Essa coluna é a chave primária da tabela. O tratamento utilizado foi o mesmo da tabela `dados_mutuarios`. Como não foram encontrados valores em branco ou duplicados, não ocorreu erro na execução da *query*.
 
 ```sql
 ALTER TABLE emprestimos ADD CONSTRAINT 
 PRIMARY KEY (loan_id);
 ```
 
-
 #### Coluna `loan_intent`
 
-Ha coluna possue categorias de escolhas, contendo valores em branco. Esses valores são 312 regisros e serão excluidos sistema.  
+Essa coluna novamente apresenta categorias nos registros e contém valores em branco. Como são 312 registros, eles serão excluidos da tabela.
 
 ```sql
 SELECT loan_intent, COUNT(loan_intent) FROM emprestimos GROUP BY loan_intent; 
 DELETE FROM emprestimos WHERE loan_intent = '';
 ```
 
-img 8
+![8](https://user-images.githubusercontent.com/6025360/187928366-5f31ad5f-8929-4f97-811c-f6c109fef49c.png)
 
 #### Coluna `loan_grade`
 
-Assim como a anterior, essa possue poussue 310 regisros em branco que serão excluídos.
+Assim como a coluna anterior, essa é uma coluna com dados categóricos e possui 276 regisros em branco, que serão excluídos.
 
 ```sql
 SELECT loan_grade, COUNT(loan_grade) FROM emprestimos GROUP BY loan_grade;
 ```
 
-img 9
+![9](https://user-images.githubusercontent.com/6025360/187928940-4bdd6736-cd4e-487b-a531-8202564cceb9.png)
 
 
 #### Coluna `loan_amnt`
 
-Essa coluna possue valores vazios. No entanto, ela pode ser calculada considerando-se outras colunas. Isso será feito após a união de todas as tabelas.
+Essa coluna possui valores em branco. No entanto, essa coluna pode ser calculada utilizando a coluna `loan_percent_income` e a coluna `person_income` na tabela `dados_mutuarios`, por isso os valores não serão excluidos no momento e serão tratados novamente após a união das tabelas.
 
 ```sql
 SELECT SUM(CASE WHEN loan_amnt is null THEN 1 ELSE 0 END) AS 'Valores Nulos', COUNT(loan_amnt) AS 'Valores Não Nulos'
 FROM emprestimos;
 ```
 
-img 10 
+![10](https://user-images.githubusercontent.com/6025360/187929605-0235f961-d81a-43d0-ba07-c8d8c54b1cd4.png)
 
 
 #### Coluna `loan_int_rate`
 
-Assim como a coluna anterior, essa coluna valores vazios. Porém eles compõe uma parte grande da base de dados, por isso serão mantidos no sistema.
+Apesar de possuir valores em branco,  ela apresenta um número elevado de valores faltantes. Esses valores serão mantidos e avaliados novamente após a união das tabelas.
 
 ```sql
 SELECT SUM(CASE WHEN loan_int_rate is null THEN 1 ELSE 0 END) AS 'Valores Nulos', COUNT(loan_int_rate) AS 'Valores Não Nulos'
 FROM emprestimos;
 ```
 
-img 11
+![11](https://user-images.githubusercontent.com/6025360/187929686-4124d7e9-fbfd-410e-be9e-38fedb6f8c18.png)
 
 #### Coluna `loan_status`
 
-Essa coluna possue valores nulos que não podem ser calculados. 325 deles. por isso eles serão deletados
+Essa coluna categórica apresenta 325 valores nulos que serão excluídos da base de dados.
 
 ```sql
 SELECT SUM(CASE WHEN loan_status is null THEN 1 ELSE 0 END) AS 'Valores Nulos', COUNT(loan_status) AS 'Valores Não Nulos'
 FROM emprestimos;
 ```
 
-img 12
+![12](https://user-images.githubusercontent.com/6025360/187930433-a79762a3-1581-4608-afc5-c7dccf08adc8.png)
 
 #### Coluna `loan_percent_income`
 
-Mais uma coluna calculável com valores nulos que serão tratados posteriormente.
+Essa coluna apresenta valores em branco que serão recalculados de acordo com as colunas `loan_amnt` e `person_income`.
 
 ```sql
+SELECT SUM(CASE WHEN loan_percent_income is null THEN 1 ELSE 0 END) AS 'Valores Nulos', COUNT(loan_percent_income) AS 'Valores Não Nulos'
+FROM emprestimos;
 ```
 
-img 13
+![13](https://user-images.githubusercontent.com/6025360/187930633-02683b03-9894-4c59-88d9-f5a2a20a5ce0.png)
 
 
 ### Tabela `historicos_banco`
 
 #### Coluna `cb_id`
 
-Coluna que foi definida como chave primária do sistema
+Após garantir que não haveriam valores em branco, essa coluna foi alterada para ser a chave primária do sistema.
 
 ```sql
 ALTER TABLE historicos_banco ADD CONSTRAINT 
@@ -269,33 +270,44 @@ PRIMARY KEY (cb_id);
 
 #### Coluna `cb_person_default_on_file`
 
-Coluna com valorews em branco que foram deletados.
+Essa coluna apresentou 367 regisros em branco que foram deletados por representarem uma quatidade pequena.
 
 ```sql
 SELECT cb_person_default_on_file, COUNT(cb_person_default_on_file) FROM historicos_banco GROUP BY cb_person_default_on_file; 
 DELETE FROM historicos_banco WHERE cb_person_default_on_file = '';
 ```
 
-img 14
+![14](https://user-images.githubusercontent.com/6025360/187931275-ee5b9e00-f4cf-419c-85a0-e7a0a9041124.png)
 
 #### Coluna `cb_person_cred_hist_length`
-Havia apenas um valor nulo que foi excluido
+
+Nesta coluna havia apenas um registro sem valor, por isso ele foi excluído.
 
 ```sql
+SELECT SUM(CASE WHEN cb_person_cred_hist_length is null THEN 1 ELSE 0 END) AS 'Valores Nulos', COUNT(cb_person_cred_hist_length) AS 'Valores Não Nulos'
+FROM historicos_banco;
+
+DELETE FROM historicos_banco WHERE cb_person_cred_hist_length IS NULL;
 ```
 
-img 15
+![15](https://user-images.githubusercontent.com/6025360/187931638-2290998e-392b-4419-ad67-8452ab92040a.png)
 
 
 ### Tabela `id`
 
-Primeiro tentei fazer as chaves estrangeiras, depois deu erro porque o tinha duplicata. Teve que deletar 571 coisas.
+Essa tabela relaciona as outras 3 tabelas entre si e as colunas são chaves estrangeiras que se conectam com as chaves primárias de cada tabela. Ao tentar criar as chaves estrangeiras, um erro aconteceu por haver inconsistência de dados entre as tabelas. Haviam alguns registros na tabela ID que não estavam nas outras tabelas. Ao executar o script, foi percebido que haviam 571 dados que deveriam ser excluídos.
 
 ```sql
+SELECT count(person_id) AS faltantes_totais FROM id 
+WHERE 
+	person_id not in (select person_id from dados_mutuarios) or 
+    loan_id not in (select loan_id from emprestimos) or 
+    cb_id not in (select cb_id from historicos_banco);
 ```
-img 16
 
-Depois de fazer isso e deletar, deu de fazer as chaves estrangeiras
+![16](https://user-images.githubusercontent.com/6025360/187933767-10a77723-120b-49e6-9d26-7712495d3250.png)
+
+Após a exclusão dos dados, também foi necessário alterar o tipo de dados das colunas. Na tabela `id` as colunas estavam com o tipo `TEXT` que foi alterado para o tipo `VARCHAR(16)` e coincidir com o tipo correto das colunas. Essa mudança foi feito por meio do assitente visual do MySQL. Com o tipo alterado e os dados inválidos retirados, foi possível criar as chaves primárias.
 
 ```sql
 ALTER TABLE id
@@ -312,15 +324,19 @@ ADD CONSTRAINT FK_HISTORICOS_BANCO
 FOREIGN KEY (cb_id) REFERENCES historicos_banco (cb_id);
 ```
 
-img 17
+![17](https://user-images.githubusercontent.com/6025360/187934322-aecbcd6c-e291-4be2-9b91-620c2cd5b7be.png)
 
-Com isso o relacionamento correto foi configurado no sistema
+Com as configurações de chaves primárias e estrangeiras criadas, o relacionamento do banco de dados foi completo.
 
-img 18
+![18](https://user-images.githubusercontent.com/6025360/187934507-0917273f-ec06-4a41-8469-0a9ca38aa83f.png)
 
 
 ### Próximos passos
-Depois da criação das chaves secundárias, podemos passar para a união das tabelas e conferir o que faltou nas colunas `person_income`,``,`erer` e `erer`.
+
+Com os dados corrigidos e o relacionamento criado, é possível efetuar a união das tabelas em uma única tabela contendo a informação de todos os empréstimos feitos por clientes do banco. 
+
+No entanto, as colunas `person_income`,`loan_amnt`, `loan_int_rate`, `loan_percent_income` não receberam tratamento completo serão avaliadas novamente.
+
 
 ## Unindo tabelas
 
