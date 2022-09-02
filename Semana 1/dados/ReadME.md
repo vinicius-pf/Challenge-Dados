@@ -1,4 +1,4 @@
-# Semana 1 - Tratamento de Dados
+# Tratamento dos Dados
 
 Para a primeira semana do challenge, a empresa disponibilizou uma cópia do [dump do banco de dados](https://github.com/vinicius-pf/Challenge-Dados/blob/Semana_1/Semana%201/dados/dump/Dump.sql) da empresa com as informações de alguns dados dos clientes em conjunto com um dicionário descrevendo os valores de cada coluna. Esses dados foram disponibilizados via [trello](https://trello.com/b/wjOlcef2/challenge-dados-semana-1), em conjunto com demandas feitas pela empresa a respeito dos dados.
 
