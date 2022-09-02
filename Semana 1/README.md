@@ -1,12 +1,12 @@
 # Semana 1 - Tratamento de Dados
 
-Para a primeira semana do challenge, a empresa disponibilizou uma cópia dump do banco de dados da empresa com as informações de alguns dados dos clientes em conjunto com um dicionário descrevendo os valores de cada coluna. Esses dados foram disponibilizados via [trello](https://trello.com/b/wjOlcef2/challenge-dados-semana-1), que também possui demandas feitas pela empresa a respeito dos dados.
+Para a primeira semana do challenge, a empresa disponibilizou uma cópia do [dump do banco de dados](https://github.com/vinicius-pf/Challenge-Dados/blob/Semana_1/Semana%201/dados/dump/Dump.sql) da empresa com as informações de alguns dados dos clientes em conjunto com um dicionário descrevendo os valores de cada coluna. Esses dados foram disponibilizados via [trello](https://trello.com/b/wjOlcef2/challenge-dados-semana-1), em conjunto com demandas feitas pela empresa a respeito dos dados.
 
 Esses dados serão estudados e tratados de acordo com as demandas da empresa. Após o tratamento dos dados, eles serão exportados para um arquivo do tipo `.csv` que será utilizado para outras etapas do projeto.
 
 ## Conhecendo os dados
 
-Com o [dump](https://github.com/vinicius-pf/Challenge-Dados/blob/Semana_1/Semana%201/dados/dump/Dump.sql) da base de dados recuperada, o primeiro passo foi conferir a integridade das informações disponibilizadas por meio de análises nas tabelas com o auxílio do [dicionário de dados disponibilizado](https://github.com/vinicius-pf/Challenge-Dados/blob/Semana_1/Semana%201/dados/Dicionario.md) pela empresa. Com as *queries* usadas, foi possível entender alguns pontos
+Com o [dump](https://github.com/vinicius-pf/Challenge-Dados/blob/Semana_1/Semana%201/dados/dump/Dump.sql) da base de dados recuperada, o primeiro passo foi conferir a integridade das informações disponibilizadas por meio de análises nas tabelas, e entender as informações presentes com o auxílio do [dicionário de dados disponibilizado](https://github.com/vinicius-pf/Challenge-Dados/blob/Semana_1/Semana%201/dados/Dicionario.md) pela empresa. Para isso, foram utilizadas as seguintes *queries* SQL:
 
 ```sql
 select * from emprestimos;
@@ -52,7 +52,6 @@ Novamente a coluna que deveria ser a chave primária não está configurada corr
 
 A terceira tabela do banco de dados 34489 registros e 3 colunas a respeito dos empréstimos realizados pela empresa.
 
-
 | Feature | Descrição | Característica
 | --- | --- | --- |
 |`cb_id`|ID do histórico de cada solicitante| Chave primária da tabela do tipo `varchar(16)`. Não contém valores únicos.
@@ -72,7 +71,6 @@ Essa tabela relaciona os IDs de cada tabela. Ela contém 14952 registros e 3 col
 |`cb_id`|ID do histórico de cada solicitante| Chave estrangeira relacionada com `historicos_banco` com valores `text`
 
 O tipo das colunas não corresponde aos tipos das colunas nas outras tabelas, o que precisará ser corrigido. Além disso, as colunas devem ser chaves estrangeiras para corrigir o relacionamento do banco de dados.
-
 
 ## Verificando e corrigindo inconsistências
 
@@ -136,7 +134,7 @@ SELECT person_age, COUNT(person_age) AS CONTAGEM FROM dados_mutuarios GROUP BY p
 ![5](https://user-images.githubusercontent.com/6025360/187920404-5ceea8ba-452b-4105-911c-2b211edbe5a8.png)
 
 ```sql
-DELETE FROM dados_mutuarios	WHERE person_age > 120
+DELETE FROM dados_mutuarios WHERE person_age > 120
 ```
 
 #### Coluna `person_income`
@@ -148,7 +146,7 @@ SELECT SUM(CASE WHEN person_income is null THEN 1 ELSE 0 END) AS 'Valores Nulos'
 FROM DADOS_MUTUARIOS;
 ```
 
-img ??
+img 19
 
 #### Coluna `person_home_ownership`
 
@@ -171,12 +169,13 @@ SELECT * FROM DADOS_MUTUARIOS WHERE person_emp_length > person_age
 ![7](https://user-images.githubusercontent.com/6025360/187924026-59e1a99b-395e-490a-951d-47b853b7dc0e.png)
 
 ```sql
-DELETE FROM dados_mutuarios	WHERE person_emp_length > person_age;
+DELETE FROM dados_mutuarios WHERE person_emp_length > person_age;
 ```
 
-Os dados em branco foram avaliados, porém não apresentaram motivo para exclusão.
+Os dados em branco foram avaliados, porém por representarem uma grande quantidade de dados, eles foram mantidos e poderão ser removidos em análises futuras.
 
-img ??
+Ao final do tratamento dos dados a tabela ficou com 34158 registos.
+
 
 ### Tabela `emprestimos`
 
@@ -225,7 +224,7 @@ FROM emprestimos;
 
 #### Coluna `loan_int_rate`
 
-Apesar de possuir valores em branco,  ela apresenta um número elevado de valores faltantes. Esses valores serão mantidos e avaliados novamente após a união das tabelas.
+Apesar de possuir valores em branco, ela apresenta um número elevado de valores faltantes. Esses valores serão mantidos e avaliados novamente após a união das tabelas.
 
 ```sql
 SELECT SUM(CASE WHEN loan_int_rate is null THEN 1 ELSE 0 END) AS 'Valores Nulos', COUNT(loan_int_rate) AS 'Valores Não Nulos'
@@ -256,6 +255,7 @@ FROM emprestimos;
 
 ![13](https://user-images.githubusercontent.com/6025360/187930633-02683b03-9894-4c59-88d9-f5a2a20a5ce0.png)
 
+Ao final do tratamento, a tabela ficou com 33598 registos.
 
 ### Tabela `historicos_banco`
 
@@ -292,6 +292,7 @@ DELETE FROM historicos_banco WHERE cb_person_cred_hist_length IS NULL;
 
 ![15](https://user-images.githubusercontent.com/6025360/187931638-2290998e-392b-4419-ad67-8452ab92040a.png)
 
+Ao final do tratamento, a tabela ficou com 34121 registros.
 
 ### Tabela `id`
 
@@ -308,6 +309,8 @@ WHERE
 ![16](https://user-images.githubusercontent.com/6025360/187933767-10a77723-120b-49e6-9d26-7712495d3250.png)
 
 Após a exclusão dos dados, também foi necessário alterar o tipo de dados das colunas. Na tabela `id` as colunas estavam com o tipo `TEXT` que foi alterado para o tipo `VARCHAR(16)` e coincidir com o tipo correto das colunas. Essa mudança foi feito por meio do assitente visual do MySQL. Com o tipo alterado e os dados inválidos retirados, foi possível criar as chaves primárias.
+
+img 20
 
 ```sql
 ALTER TABLE id
@@ -330,19 +333,16 @@ Com as configurações de chaves primárias e estrangeiras criadas, o relacionam
 
 ![18](https://user-images.githubusercontent.com/6025360/187934507-0917273f-ec06-4a41-8469-0a9ca38aa83f.png)
 
+Após as correções, a tabela ficou com 14381 registros.
 
 ### Próximos passos
 
-Com os dados corrigidos e o relacionamento criado, é possível efetuar a união das tabelas em uma única tabela contendo a informação de todos os empréstimos feitos por clientes do banco. 
-
-No entanto, as colunas `person_income`,`loan_amnt`, `loan_int_rate`, `loan_percent_income` não receberam tratamento completo serão avaliadas novamente.
-
+Com os dados corrigidos e o relacionamento criado, é possível efetuar a união das tabelas em uma única tabela contendo a informação de todos os empréstimos feitos por clientes do banco. As colunas `person_income`,`loan_amnt`, `loan_int_rate`, `loan_percent_income` não receberam tratamento completo e serão avaliadas novamente.
 
 ## Unindo tabelas
 
-Para unir as tabelas, foram utilizadas as chaves primária e estrangeiras. Para isso se seguiu o relacionamento
+As tabelas serão unidas e o resultado da união será armazenado em um outra tabela. Isso permitirá reavaliar a junção das tabelas caso seja necessário. Para isso foi utilizado o INNER JOIN, que retorna apenas os registros presentes nas duas tabelas de acordo com a coluna de junção. 
 
-Para unir as tabelas, foi criada uma tabela que receberá os valores.
 
 ```sql
 CREATE TABLE dados_inner (SELECT * FROM dados_mutuarios dm 
@@ -351,12 +351,12 @@ INNER JOIN emprestimos em USING (loan_id)
 INNER JOIN historicos_banco hb USING (cb_id))
 ```
 
-14381 registros totais
+Como a tabela `id` possue um número de registros menor que as outras colunas, essa tabela de união também recebeu menos registros, terminando com 14381 valores. Caso seja necessário, podem ser feitos outros tipos de JOIN. 
 
 ##Corrigindo
 
 ### Traduzindo 
-usei rename
+Para traduzir as colunas, foi utilizado o dicionário da empresa para definir o melhor nome para cada coluna de acordo com a tradução literal e o significado da coluna para a base de dados.
 
 ```sql
 ALTER TABLE dados_inner
@@ -381,8 +381,9 @@ Apesar do nome das colunas ter sido traduzido, os registros em lingua inglesa n�
 
 ### Encontrando valores em branco
 
-#### coluna `renda_percentual`
-Corrigiu os que dava, os que não deu, deletou: 27
+#### Coluna `renda_percentual`
+Essa coluna pode ser calculada utilizando as colunas `salario_anual` e `valor_emprestimo`. Os dados que estavam em branco foram corrigidos se a pessoa possuía as duas informações. Em 27 casos não foi possível inserir os dados e por isso os registros foram excluídos da tabela.
+
 
 ```sql
 UPDATE dados_inner SET	renda_percentual = valor_emprestimo / salario_anual 
@@ -391,8 +392,9 @@ where renda_percentual is null and valor_emprestimo is not null and salario_anua
 DELETE FROM dados_inner where renda_percentual is null;
 ```
 
-#### coluna `salario anual`
-Corrigiu os que dava, os que não deu, deletou: 11
+#### Coluna `salario_anual`
+
+Assim como a coluna anterior, esta coluna pode ser calculada utilizando outras colunas da tabela. Após o cálculo, ainda haviam 11 registros em branco que foram excluídos.
 
 ```sql
 UPDATE dados_inner SET	salario_anual = valor_emprestimo / renda_percentual 
@@ -401,15 +403,29 @@ where salario_anual is null and valor_emprestimo is not null and renda_percentua
 DELETE FROM dados_inner where salario_anual is null;
 ```
 
-#### coluna `valor emprestimo`
-Corrigiu o que dava e acabou com os nulos
-```sql
-UPDATE dados_inner SET	salario_anual = valor_emprestimo / renda_percentual 
-where salario_anual is null and valor_emprestimo is not null and renda_percentual is not null;
+#### Coluna `valor_emprestimo`
 
-DELETE FROM dados_inner where salario_anual is null;
+Novamente a coluna pode ser calculada utilizando as outras colunas da tabela. Após essa etapa, não houveram mais dados em branco na coluna para serem excluídos.
+
+```sql
+UPDATE dados_inner SET	valor_emprestimo = salario_anual * renda_percentual 
+where valor_emprestimo is null and salario_anual is not null and renda_percentual is not null;
+
+DELETE FROM dados_inner where valor_emprestimo is null;
 ```
+
+#### Coluna `taxa_juros`
+
+A coluna não pode ser tratada anteriormente por possuir um alto valor de registros nulos. Apesar da união ter excluído dados, esses valores nulos se mantiveram em alto percentual e serão mantidos no sistema no momento.
+
+```sql
+SELECT count(*) from dados_inner where taxa_juros is null
+```
+
+img 21
+
+Após a limpeza das colunas calculadas, a base de dados ficou com 14343 registros.
 
 ## Exportando 'csv'
+Para as próximas etapas do projeto, será necessário exportar a tabela de união para um arquivo csv. Para isso foi utilizado o assistente do MySQL. Durante a exortação foram excluídas as colunas `dm_id`, `em_id` e `hb_id` por possuírem alta cardinalidade. A tabela final pode ser conferida [aqui](link)
 
-Após a transformação dos dados, a tabela foi exporta para um arquivo csv que servirá como base para as visualizações futuras.
