@@ -146,7 +146,7 @@ SELECT SUM(CASE WHEN person_income is null THEN 1 ELSE 0 END) AS 'Valores Nulos'
 FROM DADOS_MUTUARIOS;
 ```
 
-img 19
+![19](https://user-images.githubusercontent.com/6025360/188207594-40d79b0e-d8c3-494c-8b8d-67492689505e.png)
 
 #### Coluna `person_home_ownership`
 
@@ -175,7 +175,6 @@ DELETE FROM dados_mutuarios WHERE person_emp_length > person_age;
 Os dados em branco foram avaliados, porém por representarem uma grande quantidade de dados, eles foram mantidos e poderão ser removidos em análises futuras.
 
 Ao final do tratamento dos dados a tabela ficou com 34158 registos.
-
 
 ### Tabela `emprestimos`
 
@@ -310,7 +309,7 @@ WHERE
 
 Após a exclusão dos dados, também foi necessário alterar o tipo de dados das colunas. Na tabela `id` as colunas estavam com o tipo `TEXT` que foi alterado para o tipo `VARCHAR(16)` e coincidir com o tipo correto das colunas. Essa mudança foi feito por meio do assitente visual do MySQL. Com o tipo alterado e os dados inválidos retirados, foi possível criar as chaves primárias.
 
-img 20
+![20](https://user-images.githubusercontent.com/6025360/188207686-73d46c37-bf4b-4ab0-98b5-0052d042796b.png)
 
 ```sql
 ALTER TABLE id
@@ -421,7 +420,7 @@ A coluna não pode ser tratada anteriormente por possuir um alto valor de regist
 SELECT count(*) from dados_inner where taxa_juros is null
 ```
 
-img 21
+![image](https://user-images.githubusercontent.com/6025360/188207750-0fab8a4c-7187-420b-a15a-d203455379ac.png)
 
 Após a limpeza das colunas calculadas, a base de dados ficou com 14343 registros.
 
