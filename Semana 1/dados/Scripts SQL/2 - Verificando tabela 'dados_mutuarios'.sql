@@ -29,15 +29,12 @@ DELETE FROM dados_mutuarios	WHERE person_age > 120;
 
 
 #Verificando a coluna 'person_income'
-SELECT person_income, COUNT(person_income) FROM DADOS_MUTUARIOS GROUP BY person_age; 
 SELECT SUM(CASE WHEN person_income is null THEN 1 ELSE 0 END) AS 'Valores Nulos', COUNT(person_income) AS 'Valores Não Nulos'
 FROM DADOS_MUTUARIOS;
-SELECT * FROM DADOS_MUTUARIOS where person_income IS NULL;
 
 #Verificando frequencia em comparação com outra coluna
 SELECT person_home_ownership, COUNT(person_home_ownership) FROM DADOS_MUTUARIOS GROUP BY person_home_ownership; 
 SELECT person_home_ownership, COUNT(person_home_ownership) FROM DADOS_MUTUARIOS where person_income IS NULL GROUP BY person_home_ownership;
-
 
 
 # Passando para a coluna 'person_home_ownership'

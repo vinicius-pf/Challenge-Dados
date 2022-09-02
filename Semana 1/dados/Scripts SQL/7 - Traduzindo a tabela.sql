@@ -53,6 +53,10 @@ where valor_emprestimo is null and salario_anual is not null and renda_percentua
 UPDATE dados_inner SET	valor_emprestimo = salario_anual * renda_percentual 
 where valor_emprestimo is null and salario_anual is not null and renda_percentual is not null;
 
+SELECT renda_percentual, valor_emprestimo, salario_anual from dados_inner
+where valor_emprestimo is null;
+
+DELETE FROM dados_inner where valor_emprestimo is null;
+
 # Vendo a coluna `taxa_juros`
-SELECT anos_trabalhados, taxa_juros, possibilidade_inadimplencia from dados_inner
-where taxa_juros is null
+SELECT count(*) from dados_inner where taxa_juros is null
