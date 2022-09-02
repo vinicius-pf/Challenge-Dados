@@ -353,7 +353,7 @@ INNER JOIN historicos_banco hb USING (cb_id))
 
 Como a tabela `id` possue um número de registros menor que as outras colunas, essa tabela de união também recebeu menos registros, terminando com 14381 valores. Caso seja necessário, podem ser feitos outros tipos de JOIN. 
 
-##Corrigindo
+## Corrigindo inconsistências da tabela de união
 
 ### Traduzindo 
 Para traduzir as colunas, foi utilizado o dicionário da empresa para definir o melhor nome para cada coluna de acordo com a tradução literal e o significado da coluna para a base de dados.
@@ -383,7 +383,6 @@ Apesar do nome das colunas ter sido traduzido, os registros em lingua inglesa n�
 
 #### Coluna `renda_percentual`
 Essa coluna pode ser calculada utilizando as colunas `salario_anual` e `valor_emprestimo`. Os dados que estavam em branco foram corrigidos se a pessoa possuía as duas informações. Em 27 casos não foi possível inserir os dados e por isso os registros foram excluídos da tabela.
-
 
 ```sql
 UPDATE dados_inner SET	renda_percentual = valor_emprestimo / salario_anual 
@@ -428,4 +427,3 @@ Após a limpeza das colunas calculadas, a base de dados ficou com 14343 registro
 
 ## Exportando 'csv'
 Para as próximas etapas do projeto, será necessário exportar a tabela de união para um arquivo csv. Para isso foi utilizado o assistente do MySQL. Durante a exortação foram excluídas as colunas `dm_id`, `em_id` e `hb_id` por possuírem alta cardinalidade. A tabela final pode ser conferida [aqui](link)
-
