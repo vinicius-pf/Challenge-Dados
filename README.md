@@ -21,7 +21,7 @@ Para a primeira semana do projeto, a Alura Ca$h disponibilizou uma base de dados
 
 Após a importação dos dados, as tabelas foram tratadas por meio do MySQL Workbench de acordo com as informações contidas nas colunas. Após o tratamento dos dados, as tabelas foram unidas em uma tabela global contendo as informações de empréstimos e clientes.
 
-Além disso, a tabela final teve as colunas traduzidas para o português e salva também em um arquivo [csv]()
+Além disso, a tabela final teve as colunas traduzidas para o português e salva também em um arquivo csv.
 
 ## Semana 2 Aprendendo com os dados
 
