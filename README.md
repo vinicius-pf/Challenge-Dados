@@ -4,7 +4,7 @@ Desafios do Challenge Dados da escola Alura produzidos nos meses de Agosto e Set
 
 ## Semana 1 - Tratamento de Dados: Entendendo como tratar dados com SQL
 
-Para a primeira semana a empresa entrou em contato e enviou as demandas via cards do trello, além de disponibilizar a base de dados mySQL.
+Na primeira semana, a empresa entrou em contato e disponibilizou uma base de dados MySQL para que os dados fossem tratados antes da criação do modelo de inadimplência.
 
 ## Semana 2 - Aprendendo com os Dados: Criando um modelo de previsão de inadimplência
 
