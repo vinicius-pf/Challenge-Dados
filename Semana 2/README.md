@@ -125,6 +125,8 @@ Com o relatório exibido, foi possível perceber alguns comportamentos indesejad
 
 ### Aplicando Encoding nos dados
 
+Como modelos de machine learning não conseguem entender dados textuais, é necessário aplicar técnicas de *encoding* para variáveis categóricas. Para esse modelo será utilizada a técnica de *One-Hot Encoding*.
+
 Os computadores não sabem ler bem valores textuais, então as variáveis categóricas receberam o processo One Hot Encoder. Esse processo é melhor para modelos que serão exportados.
 
 ### Normalizando os dados numéricos.
@@ -137,12 +139,23 @@ Como a variável target está desbalanceada, é necessário balancear utilizando
 
 ## Criação e avaliação dos modelos
 
+Com os dados preparados, é possível criar e validar os modelos de machine learning.
+
 ### Criação
 
+Foram criados 4 modelos e um modelo dummy para comparação.
+
 ### Avaliação
+
+Os modelos foram comparados por meio de métricas de precisão, acurácia, recall, f1 e curva roc. O melhor modelo foi escolhido e otimizado
 
 ## Otimizando e validando o melhor modelo
 
 ### Validação cruzada
 
+Para garantir as métricas e entender o modelo, foi feito uma validação cruzada utilizando o cross_validate. Isso permitiu perceber o overfitting do modelo, por isso ele foi otimizado alterando seus hiperparametros.
+
 ### RandomizedSearchCV
+
+Se um dia o código parar de rodar, eu consigo escrever sobre.
+
