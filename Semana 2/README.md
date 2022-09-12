@@ -103,14 +103,25 @@ def encontrando_outliers(coluna):
 
 #### Lições
 
-As colunas analisadas foram as colunas 
+As variáveis `idade_pessoa`, `salario_anual`, `anos_trabalhados`, `valor_emprestimo`, `taxa_juros`, `renda_percentual`, `anos_primeiro_emprestimo` foram analisadas com as funções definidas e alguns comportamentos foram percebidos.
 
+A coluna `taxa_juros` foi a única coluna numérica que não possuia uma forte assimetria à direita. Apesar do boxplot apresentar uma pequena assimetria, as outras colunas apresentaram uma característica de assimetria forte. Todas as colunas possuiam outliers. Esses outliers representavam entre 0.44%, para a coluna `taxa_juros`, e 5.30%, na variável `valor_emprestimo`, dos dados de cada coluna.
 
-Nas colunas numéricas foram verificados os outliers por meio de boxplot e cálculo matemático. Todas as colunas numéricas continham outliers. Esses não foram tratados por haver colunas correlacionadas.
+Após o processo de análise dos outliers, foi efetuada uma análise da correlação entre as variáveis, onde algumas colunas poderiam ser excluídas do sistema. Além disso, foram feitos também processos de encoding e normalização dos dados. Por isso os outliers não foram removidos das colunas.
 
 ### Removendo as variáveis indesejadas
 
-As variáveis foram verificadas com a biblioteca pandas_profilling. Utilizando ela deu-se para perceber como as variáveis estão correlacionadas e excluir informações possivelmente dúbias no sistema.
+Após a análise dos outliers, foi efetuada uma análise de correlação entre as variáveis. Para isso se utilizou a biblioteca [pandas-profilling](https://pypi.org/project/pandas-profiling/), que gera um relatório HTML com informações pertinentes a respeito de cada coluna. Com esse relatório foi possível definir quais colunas eram importantes para o modelo e quais poderiam ser descartadas.
+
+Com o relatório exibido, foi possível perceber alguns comportamentos indesejados:
+
+1 - As colunas `idade_pessoa` e `anos_primeiro_emprestimo` possuem alta correlação entre si. A coluna `anos_primeiro_emprestimo` foi mantida por conter uma quantidade menor de outliers enquanto a coluna `idade_pessoa` foi removida do modelo. 
+
+2 - As colunas `renda_percentual` e `valor_emprestimo` possuem alta correlação entre si por possuírem dados que foram calculados com base nessas colunas. Como a coluna `renda_percentual` possuia umm número menor de outliers, ela foi mantida e a coluna `valor_emprestimo` foi removida das análises.
+
+3 - A coluna `anos_trabalhados` possui um grande número de valores 0. Isso não é um problema, tendo em vista que muitas pessoas que recém começaram a trabalhar podem necessitar de um empréstimo.
+
+4 - Por último as colunas `taxa_juros`, `foi_inadimplente` e `pontuacao_emprestimo` possuiam alta correlação entre si. Como a coluna `taxa_juros` possui um alto número de valores zero, ela foi excluída do modelo. Também foi removida a coluna `foi_inadimplente`.
 
 ### Aplicando Encoding nos dados
 
