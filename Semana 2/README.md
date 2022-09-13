@@ -125,17 +125,89 @@ Com o relatório exibido, foi possível perceber alguns comportamentos indesejad
 
 ### Aplicando Encoding nos dados
 
-Como modelos de machine learning não conseguem entender dados textuais, é necessário aplicar técnicas de *encoding* para variáveis categóricas. Para esse modelo será utilizada a técnica de *One-Hot Encoding*.
+Como modelos de machine learning não conseguem entender dados textuais, é necessário aplicar técnicas de *encoding* para variáveis categóricas. Para esse modelo adotou-se a técnica de *One-Hot Encoding*. Como a empresa deseja exportar o modelo de machine learning, a biblioteca sklearn disponilibiliza o módulo [One Hot Encoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html).
 
-Os computadores não sabem ler bem valores textuais, então as variáveis categóricas receberam o processo One Hot Encoder. Esse processo é melhor para modelos que serão exportados.
+```python
+from sklearn.compose import make_column_transformer
+from sklearn.preprocessing import OneHotEncoder
+
+colunas_categoricas = ['tipo_imovel', 'motivo_emprestimo', 'pontuacao_emprestimo']
+
+one_hot_enc = make_column_transformer(
+    (OneHotEncoder(handle_unknown = 'ignore'),
+    colunas_categoricas),
+    remainder='passthrough')
+
+dados_encode = one_hot_enc.fit_transform(dados)
+dados_encode = pd.DataFrame(dados_encode, columns=one_hot_enc.get_feature_names_out())
+```
+
+A aplicação da técnica de One Hot cria colunas adicionais para cada categoria nas variáveis categóricas. Por isso o dataset aumentou de 12 para 26 colunas.
 
 ### Normalizando os dados numéricos.
 
-Dados numéricos precisam entar em ordem de granzedas parecidas para o modelo trabalhar melhor. por isso foi aplicada uma normalização nas variáveis numéricas.
+Além das colunas categóricas, as colunas numéricas também sofreram processamento antes da criação do modelo. Esse processo de normalização deixou os diferentes dados numéricos no mesmo nível de grandeza para facilitar o entendimento do modelo de machine learning. Para isto, foi utilizado o [StandartScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html). Esse método normaliza os dados de acordo com a média e o desvio padrão de cada coluna.
+
+```python
+from sklearn.preprocessing import StandardScaler
+
+numericas = ['salario_anual', 'anos_trabalhados', 'renda_percentual', 'anos_primeiro_emprestimo']
+
+scaler = StandardScaler()
+
+dados_encode[numericas] = scaler.fit_transform(dados_encode[numericas])
+```
+
+Após a normalização dos dados, foi efetuado o balanceamento da variável target.
+
 
 ### Balanceando os dados
 
-Como a variável target está desbalanceada, é necessário balancear utilizando oversampling.
+A variável target apresenta desbalanceamento que deve ser corrigido. Nos primeiros testes, foi efetuado balanceamento por *oversampling*, porém o modelo apresentou overfitting e não conseguiu melhorar as métricas. Por isso foi incluida uma técnica de undersampling.
+
+Antes disso, no entanto, para evitar que dados sintéticos ficassem no grupo de testes, o dataset foi dividido em dados de treino e teste utilizando o ´train_test_split()](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html).
+
+```python
+from sklearn.model_selection import train_test_split
+
+SEED = 42
+
+X = dados_encode.drop('possibilidade_inadimplencia', axis = 1)
+y = dados_encode['possibilidade_inadimplencia']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=SEED, stratify = y)
+
+dados_antes = pd.concat([y_train,X_train], axis = 1)
+```
+
+Após isso, foi aplicada o algoritmo SMOTE e RandomUndersampling para que as distribuições ficassem mais parecidas. Para isso, foi criada uma pipeline da biblioteca imbalanced-learn
+
+```python
+from imblearn.over_sampling import SMOTE
+from imblearn.under_sampling import RandomUnderSampler
+from imblearn.pipeline import Pipeline
+
+SEED = 42
+
+over = SMOTE(random_state = SEED, sampling_strategy=0.4)
+under = RandomUnderSampler(sampling_strategy=0.5)
+
+
+steps = [('o', over), ('u', under)]
+pipeline = Pipeline(steps=steps)
+X_train, y_train = pipeline.fit_resample(X_train, y_train)
+
+dados_treino = pd.concat([y_train,X_train], axis = 1)
+```
+
+Com isso foram alterados registros.
+
+```python
+Haviam 5039 registros na classe minoritária. Foram criados 2195 registros para essa clase.
+Haviam 18087 registros na classe majoritária. Foram removidos 3619 registros dessa classe.
+```
+
+Após o balanceamento, é possível passar para a criação e validação dos modelos.
 
 ## Criação e avaliação dos modelos
 
