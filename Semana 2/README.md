@@ -1,6 +1,6 @@
 # [Semana 2](link)
 
-Após a limpeza dos dados da primeira semana e da exportação para um arquivo csv, a empresa requisitou que fosse criado um modelo de machine learning capaz de prever se um empréstimo sofrerá ou não inadimplência.
+Após a [limpeza dos dados da primeira semana e da exportação para um arquivo csv](https://github.com/vinicius-pf/Challenge-Dados/tree/main/Semana%201), a empresa requisitou que fosse criado um modelo de machine learning supervisionado capaz de prever se um empréstimo sofrerá ou não inadimplência.
 
 Antes da criação do modelo, no entanto, será necessário adequar os dados, utilizando técnicas de *encoding*, balanceamento e também de remoção de *features* correlacionadas.
 
