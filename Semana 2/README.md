@@ -125,7 +125,7 @@ Após o processo de análise dos outliers, foi efetuada uma análise da correla�
 
 ### Removendo as variáveis indesejadas
 
-Após a análise dos outliers, foi efetuada uma análise de correlação entre as variáveis. Para isso se utilizou a biblioteca [pandas-profilling](https://pypi.org/project/pandas-profiling/), que gera um [relatório HTML](link relatorio) com informações pertinentes a respeito de cada coluna. Com esse relatório foi possível definir quais colunas eram importantes para o modelo e quais poderiam ser descartadas.
+Após a análise dos outliers, foi efetuada uma análise de correlação entre as variáveis. Para isso se utilizou a biblioteca [pandas-profilling](https://pypi.org/project/pandas-profiling/), que gera um [relatório HTML](link relatorio) com informações pertinentes a respeito de cada coluna. O relatório possibilitou entender quais *features* eram importantes para o modelo e quais poderiam ser descartadas.
 
 Com o relatório exibido, foi possível perceber alguns comportamentos indesejados:
 
@@ -137,9 +137,17 @@ Com o relatório exibido, foi possível perceber alguns comportamentos indesejad
 
 4 - Por último as colunas `taxa_juros`, `foi_inadimplente` e `pontuacao_emprestimo` possuiam alta correlação entre si. Como a coluna `taxa_juros` possui um alto número de valores zero, ela foi excluída do modelo. Também foi removida a coluna `foi_inadimplente`.
 
+```python
+colunas = ['idade_pessoa', 'valor_emprestimo', 'foi_inadimplente', 'taxa_juros']
+
+dados_modelo = dados.drop(columns = colunas, axis = 1)
+```
+
+img 2
+
 ### Aplicando Encoding nos dados
 
-Como modelos de machine learning não conseguem entender dados textuais, é necessário aplicar técnicas de *encoding* para variáveis categóricas. Para esse modelo adotou-se a técnica de *One-Hot Encoding*. Como a empresa deseja exportar o modelo de machine learning, a biblioteca sklearn disponilibiliza o módulo [One Hot Encoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html).
+Como modelos de machine learning não conseguem entender dados textuais, é necessário aplicar técnicas de *encoding* para variáveis categóricas. Para esse modelo adotou-se a técnica de *One-Hot Encoding*. A biblioteca sklearn disponilibiliza o módulo [One Hot Encoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html), que será utilizado por permitir ser exportado como arquivo pickle, um dos desejos da empresa.
 
 ```python
 from sklearn.compose import make_column_transformer
@@ -156,7 +164,7 @@ dados_encode = one_hot_enc.fit_transform(dados)
 dados_encode = pd.DataFrame(dados_encode, columns=one_hot_enc.get_feature_names_out())
 ```
 
-A aplicação da técnica de One Hot cria colunas adicionais para cada categoria nas variáveis categóricas. Por isso o dataset aumentou de 12 para 26 colunas.
+A aplicação da técnica de *One Hot Encoding* cria colunas adicionais para cada categoria nas variáveis categóricas. Por isso o dataset aumentou de 8 para 22 colunas. Além disso o método utilizado altera os nomes das variáveis. Esses nomes serão mantidos para simplificar a exportação do modelo.
 
 ### Normalizando os dados numéricos.
 
@@ -165,7 +173,7 @@ Além das colunas categóricas, as colunas numéricas também sofreram processam
 ```python
 from sklearn.preprocessing import StandardScaler
 
-numericas = ['salario_anual', 'anos_trabalhados', 'renda_percentual', 'anos_primeiro_emprestimo']
+numericas = ['remainder__salario_anual', 'remainder__anos_trabalhados', 'remainder__renda_percentual', 'remainder__anos_primeiro_emprestimo']
 
 scaler = StandardScaler()
 
@@ -174,12 +182,11 @@ dados_encode[numericas] = scaler.fit_transform(dados_encode[numericas])
 
 Após a normalização dos dados, foi efetuado o balanceamento da variável target.
 
-
 ### Balanceando os dados
 
-A variável target apresenta desbalanceamento que deve ser corrigido. Nos primeiros testes, foi efetuado balanceamento por *oversampling*, porém o modelo apresentou overfitting e não conseguiu melhorar as métricas. Por isso foi incluida uma técnica de undersampling.
+A variável target apresenta desbalanceamento que deve ser corrigido. Inicialmente foi efetuada apenas a técnica de *oversampling* com o algoritimo [SMOTE()](https://imbalanced-learn.org/stable/references/generated/imblearn.over_sampling.SMOTE.html) da biblioteca [imbalanced-learn](https://imbalanced-learn.org/stable/index.html). No entanto o modelo apresentou características de *overfitting*. Em [pesquisas](https://machinelearningmastery.com/smote-oversampling-for-imbalanced-classification/), foi percebido que é interessante aplicar uma técnica de *undersampling* após a aplicação de técnica de *oversampling* com SMOTE. Para isso foi utilizado o método [RandomUndersampler()](https://imbalanced-learn.org/stable/references/generated/imblearn.under_sampling.RandomUnderSampler.html)
 
-Antes disso, no entanto, para evitar que dados sintéticos ficassem no grupo de testes, o dataset foi dividido em dados de treino e teste utilizando o ´train_test_split()](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html).
+Antes disso, no entanto, para evitar que dados sintéticos ficassem no grupo de testes, o dataset foi dividido em dados de treino e teste utilizando o [train_test_split()](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html).
 
 ```python
 from sklearn.model_selection import train_test_split
@@ -194,7 +201,16 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 dados_antes = pd.concat([y_train,X_train], axis = 1)
 ```
 
-Após isso, foi aplicada o algoritmo SMOTE e RandomUndersampling para que as distribuições ficassem mais parecidas. Para isso, foi criada uma pipeline da biblioteca imbalanced-learn
+```python
+tamanho_treino = len(X_train)
+tamanho_teste = len(X_test)
+
+print(f'Serão {tamanho_treino} registros para o treino e foram reservados {tamanho_teste} registros para o teste do modelo')
+```
+
+img 3
+
+Com os dados divididos, foram aplicadas as técnicas de balanceamento em conjunto com uma [pipeline](https://imbalanced-learn.org/stable/references/generated/imblearn.pipeline.Pipeline.html). Primeiramente o balanceamento se dará por *oversampling* até que a categoria minoritária fique com 40% da quantidade da categoria majoritária. Após isso, a classe majoritária teve registros removidos aleatoriamente até que a classe minoritária correspondesse a 60% do total.
 
 ```python
 from imblearn.over_sampling import SMOTE
@@ -206,7 +222,6 @@ SEED = 42
 over = SMOTE(random_state = SEED, sampling_strategy=0.4)
 under = RandomUnderSampler(sampling_strategy=0.5)
 
-
 steps = [('o', over), ('u', under)]
 pipeline = Pipeline(steps=steps)
 X_train, y_train = pipeline.fit_resample(X_train, y_train)
@@ -214,12 +229,21 @@ X_train, y_train = pipeline.fit_resample(X_train, y_train)
 dados_treino = pd.concat([y_train,X_train], axis = 1)
 ```
 
-Com isso foram alterados registros.
+Após a aplicação das técnicas de encoding, foi verificado a quantidade de dados criados e removidos da base de treino.
 
 ```python
-Haviam 5039 registros na classe minoritária. Foram criados 2195 registros para essa clase.
-Haviam 18087 registros na classe majoritária. Foram removidos 3619 registros dessa classe.
+antes = dados_antes['possibilidade_inadimplencia'].value_counts()
+depois = dados_treino['possibilidade_inadimplencia'].value_counts()
+
+majoritario = 0
+minoritario = 1
+diferenca = depois - antes
+
+print(f'Haviam {antes[minoritario]} registros na classe minoritária. Foram criados {diferenca[minoritario]} registros para essa clase.')
+print(f'Haviam {antes[majoritario]} registros na classe majoritária. Foram removidos {abs(diferenca[majoritario])} registros dessa classe.')
 ```
+
+img 4
 
 Após o balanceamento, é possível passar para a criação e validação dos modelos.
 
