@@ -4,19 +4,32 @@ Após a [limpeza dos dados da primeira semana e da exportação para um arquivo 
 
 Antes da criação do modelo, no entanto, será necessário adequar os dados, utilizando técnicas de *encoding*, balanceamento e também de remoção de *features* correlacionadas.
 
+Além a criação do modelo, a empresa também requisitou que o mesmo fosse exportado como um arquivo pickle, permitindo assim uso do modelo em outras aplicações.
+
 ## Preparando os dados
 
-Após as análises e remoções de linhas da semana 1, algumas informações não foram tratadas. Haviam colunas com informações em inglês e que deveriam ser traduzidas para o português. Além disso, as variáveis numéricas precisaram ser novamente analisadas para encontrar possíveis outliers.
+Primeiramente os [dados gerados após a semana 1](https://github.com/vinicius-pf/Challenge-Dados/blob/main/Semana%201/dados/dados_inner.csv) foram importados utilizando a biblioteca [Pandas](https://pandas.pydata.org/).
 
-Para isso, foram utilizadas duas bibliotecas python. A blibioteca [Pandas](https://pandas.pydata.org/) foi utilizada para importação dos dados e para manipulação dos mesmos. A bilioteca [Seaborn](https://seaborn.pydata.org/) foi usada para a criação dos gráficos boxplot.
+```python
+import pandas as pd
+
+url = 'https://raw.githubusercontent.com/vinicius-pf/Challenge-Dados/Semana_2/Semana%202/dados/dados_inner.csv'
+
+dados = pd.read_csv(url, sep = ';')
+dados.head()
+```
+
+img 1
+
+Algumas informações não passaram por processo de tradução. As colunas `tipo_imovel`, `motivo_emprestimo` e `foi_inadimplente` possuiam informações em inglês que foram traduzidas. Além disso, as variáveis numéricas precisaram ser novamente analisadas para encontrar possíveis *outliers*.
 
 ### Traduzindo
 
-Primeiramente as informações das colunas `tipo_imovel`, `motivo_emprestimo` e `foi_inadimplente` foram traduzidas do inglês para o português. Isso foi feito para manter a padronização dos dados, tendo em vista que os nomes das colunas também foi alterado para o português na semana anterior.
+Primeiramente as informações necessárias foram traduzidas do inglês para o português. Isso foi feito para manter a padronização dos dados, tendo em vista que os nomes das colunas também foram alterados para o português durante o tratamento dos dados em SQL.
 
 #### Colunas `tipo_imovel` e `motivo_emprestimo`
 
-Para a coluna `tipo_imovel` foi criado um dicionário Python com as informações em inglês como chave e as traduções como valores. Após isso, foi efetuado o método [replace()](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.replace.html) para fazer a tradução dos valores.
+Para a coluna `tipo_imovel` foi criado um dicionário Python com as informações em inglês como chave e as traduções como valores. Após isso, foi efetuado o método [replace()](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.replace.html) para fazer a tradução dos registros.
 
 ```python
 mapa = {
@@ -57,16 +70,15 @@ mapa = {
 dados['foi_inadimplente'].replace(mapa, inplace = True)
 ```
 
-### Verificando Outliers
+### Verificando *Outliers*
 
-Após a tradução dos dados, foi efetuada uma verificação de outliers nas colunas numéricas. Esses outliers poderiam atrapalhar o treinamento do modelo, por isso deveriam ser vistos e verificados.
+Após a tradução dos dados, foi efetuada uma verificação de *outliers* nas colunas numéricas. Esses valores poderiam atrapalhar o treinamento do modelo, por isso deveriam ser vistos e verificados.
 
-Para efetuar isso, foram definidas duas funções. Uma que desenha um boxplot da coluna e outra que conta a quantidade de outliers da coluna. Após a definição, as funções foram executadas pra cada variável numérica fosse visualizada e entendida.
+Para realizar isso, foram definidas duas funções. Uma que retorna um [boxplot](https://seaborn.pydata.org/generated/seaborn.boxplot.html) da coluna e a outra conta a quantidade de outliers da coluna. Após a definição, as funções foram executadas pra cada variável numérica fosse visualizada e entendida.
 
 ```python
 import seaborn as sns
 import matplotlib.pyplot as plt
-
 
 def desenha_boxplot(coluna,dados,xlabel):
     ''' Desenha um boxplot da coluna desejada. '''
@@ -103,21 +115,23 @@ def encontrando_outliers(coluna):
 
 #### Lições
 
-As variáveis `idade_pessoa`, `salario_anual`, `anos_trabalhados`, `valor_emprestimo`, `taxa_juros`, `renda_percentual`, `anos_primeiro_emprestimo` foram analisadas com as funções definidas e alguns comportamentos foram percebidos.
+As variáveis `idade_pessoa`, `salario_anual`, `anos_trabalhados`, `valor_emprestimo`, `taxa_juros`, `renda_percentual`, `anos_primeiro_emprestimo` foram analisadas com as funções definidas e alguns comportamentos similares foram percebidos.
 
-A coluna `taxa_juros` foi a única coluna numérica que não possuia uma forte assimetria à direita. Apesar do boxplot apresentar uma pequena assimetria, as outras colunas apresentaram uma característica de assimetria forte. Todas as colunas possuiam outliers. Esses outliers representavam entre 0.44%, para a coluna `taxa_juros`, e 5.30%, na variável `valor_emprestimo`, dos dados de cada coluna.
+A coluna `taxa_juros` foi a única coluna numérica que não possuia uma forte assimetria à direita, apesar do boxplot apresentar uma pequena assimetria. As outras colunas apresentaram uma característica de assimetria forte. Todas as colunas possuiam outliers. Esses outliers representavam entre 0.44%, para a coluna `taxa_juros`, e 5.30%, na variável `valor_emprestimo`, dos dados de cada coluna.
+
+A baixa quantidade de *outliers* para a coluna `taxa_juros` e a sua assimetria mais fraca podem se dar ao fato de haver muitos valores `0` na coluna. Em análises posteriores, foi percebido que essa alta quantidade de valores `0` corresponde a quantidade de valores nulos na base de dados SQL.
 
 Após o processo de análise dos outliers, foi efetuada uma análise da correlação entre as variáveis, onde algumas colunas poderiam ser excluídas do sistema. Além disso, foram feitos também processos de encoding e normalização dos dados. Por isso os outliers não foram removidos das colunas.
 
 ### Removendo as variáveis indesejadas
 
-Após a análise dos outliers, foi efetuada uma análise de correlação entre as variáveis. Para isso se utilizou a biblioteca [pandas-profilling](https://pypi.org/project/pandas-profiling/), que gera um relatório HTML com informações pertinentes a respeito de cada coluna. Com esse relatório foi possível definir quais colunas eram importantes para o modelo e quais poderiam ser descartadas.
+Após a análise dos outliers, foi efetuada uma análise de correlação entre as variáveis. Para isso se utilizou a biblioteca [pandas-profilling](https://pypi.org/project/pandas-profiling/), que gera um [relatório HTML](link relatorio) com informações pertinentes a respeito de cada coluna. Com esse relatório foi possível definir quais colunas eram importantes para o modelo e quais poderiam ser descartadas.
 
 Com o relatório exibido, foi possível perceber alguns comportamentos indesejados:
 
-1 - As colunas `idade_pessoa` e `anos_primeiro_emprestimo` possuem alta correlação entre si. A coluna `anos_primeiro_emprestimo` foi mantida por conter uma quantidade menor de outliers enquanto a coluna `idade_pessoa` foi removida do modelo. 
+1 - As colunas `idade_pessoa` e `anos_primeiro_emprestimo` possuem alta correlação entre si. A coluna `anos_primeiro_emprestimo` foi mantida por conter uma quantidade menor de *outliers* enquanto a coluna `idade_pessoa` foi removida do modelo. 
 
-2 - As colunas `renda_percentual` e `valor_emprestimo` possuem alta correlação entre si por possuírem dados que foram calculados com base nessas colunas. Como a coluna `renda_percentual` possuia umm número menor de outliers, ela foi mantida e a coluna `valor_emprestimo` foi removida das análises.
+2 - As colunas `renda_percentual` e `valor_emprestimo` possuem alta correlação entre si. Como a coluna `renda_percentual` possuia um número menor de *outliers*, ela foi mantida e a coluna `valor_emprestimo` foi removida das análises.
 
 3 - A coluna `anos_trabalhados` possui um grande número de valores 0. Isso não é um problema, tendo em vista que muitas pessoas que recém começaram a trabalhar podem necessitar de um empréstimo.
 
@@ -362,5 +376,10 @@ Com a validação cruzada efetuada, foi constatado o *overfitting* do modelo den
 
 ### RandomizedSearchCV
 
-Se um dia o código parar de rodar, eu consigo escrever sobre.
+Foi utilizado o método [GridSearchCV](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html). Demorou tanto que eu to documentando enquanto ele termina porque não tem como fazer nada.
 
+Após isso foi feito novamente a validação cruzada para garantir que o modelo é melhor que o overfitted.
+
+## Exportando as informações
+
+Com o modelo treinado e validado, as etapas de pré processamento e o modelo foram exportados para um arquivo pickle. Esses dados serão incluidos em uma API que será conectada ao power BI.
