@@ -215,17 +215,150 @@ Com os dados preparados, é possível criar e validar os modelos de machine lear
 
 ### Criação
 
-Foram criados 4 modelos e um modelo dummy para comparação.
+Foram criados 5 modelos de machine learning do tipo classificador, tendo em vista a característica da variável target. Os modelos criados foram um Random Forest, um Suport Vector Machine (SVC), um K-Nearest Neighbors e um AdaBoost. Além deles, também foi criado um Dummy Classifier para servir como base de comparação. 
+
+Além da criação, também foi definida uma função que retorna as previsões de cada modelo para os dados de teste.  
+
+```python
+def executa_modelo(modelo):
+
+    modelo.fit(X_train,y_train)
+    y_pred = modelo.predict(X_test)
+
+    return y_pred
+```
+
+```python
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.dummy import DummyClassifier
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import AdaBoostClassifier
+SEED = 42
+
+dummy = DummyClassifier(random_state = SEED)
+rf = RandomForestClassifier(random_state = SEED)
+svc = SVC(random_state = SEED, probability = True)
+knc = KNeighborsClassifier()
+ada = AdaBoostClassifier(random_state=SEED)
+
+modelos = [dummy, rf, svc, knc, ada]
+resultados = {}
+
+
+for modelo in modelos:
+    y_pred = executa_modelo(modelo)
+    resultados[modelo] = y_pred
+```
 
 ### Avaliação
 
-Os modelos foram comparados por meio de métricas de precisão, acurácia, recall, f1 e curva roc. O melhor modelo foi escolhido e otimizado
+Após a criação dos modelos e da geração de previsões, foi possível avaliar os modelos utilizando métricas de machine learning. Foram utilizadas as métricas precisão, acurácia, *recall*, *F1* e *ROC*. Além disso, também foram geradas matrizes de confusão para cada modelo. Essas métricas foram calculadas e retornadas por meio de uma função.
+
+Apesar de verificar diversas métricas, o modelo escolhido foi aquele que obteve melhores valores na métrica *recall*, tendo em vista o desejo da empresa em diminuir o número de empréstimos concedidos que acabam em inadimplência.
+
+```python
+from sklearn import metrics
+
+def valida_modelo(modelo, y_test, y_pred):
+    acuracia = metrics.accuracy_score(y_test, y_pred).round(4)
+    precisao = metrics.precision_score(y_test, y_pred).round(4)
+    recall = metrics.recall_score(y_test, y_pred).round(4)
+    f1 = metrics.f1_score(y_test, y_pred).round(4)
+
+    y_pred_proba = modelo.predict_proba(X_test)[::,1]
+    auc = metrics.roc_auc_score(y_test, y_pred_proba)
+
+    metricas = [acuracia, precisao, recall, f1, auc]
+
+    matriz = metrics.confusion_matrix(y_test, y_pred)
+
+    return metricas, matriz
+```
+
+```python
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+index = ['Acurácia', 'Precisão', 'Recall', 'F1', 'RoC AUC']
+df = pd.DataFrame(index = index)
+
+for modelo, resultado in resultados.items():
+    df[modelo], matriz = valida_modelo(modelo, y_test, resultado)
+    disp = metrics.ConfusionMatrixDisplay(confusion_matrix = matriz)
+    disp.plot()
+    plt.title(f'Matriz de confusão do modelo {modelo}')
+```
+
+Após a visualização da matriz de confusão, também foram verificadas as métricas por meio de um dataframe do pandas.
+
+```python
+df.columns = ['Dummy', 'RandomForest', 'SVC', 'K-Neighbors', 'Ada Boost']
+df.T.style.highlight_max(color='green')
+```
+
+Com as métricas visualizadas, percebeu-se que o modelo RandomForest teve resultados melhores não apenas na métrica *recall*, mas também nas outras métricas calculadas.
 
 ## Otimizando e validando o melhor modelo
 
+Após a escolha do modelo, foi necessário efetuar uma otimização do mesmo. O modelo apresentou valores altos em todas as métricas, o que poderia ser um sinal de *overfitting* do modelo.
+
 ### Validação cruzada
 
-Para garantir as métricas e entender o modelo, foi feito uma validação cruzada utilizando o cross_validate. Isso permitiu perceber o overfitting do modelo, por isso ele foi otimizado alterando seus hiperparametros.
+Para entender o comportamento do modelo e confirmar que ele estava tendo bons resultados, foi necessário efetuar uma validação cruzada do modelo. Para isso foi utilizado o StratifiedKFold e o método cross_validate.
+
+```python
+def dataframe_metricas(resultados):
+
+    acuracia_teste = round(resultados['test_accuracy'].mean(),4)*100
+    acuracia_treino = round(resultados['train_accuracy'].mean(),4) * 100
+    f1_teste = round(resultados['test_f1'].mean(),4) * 100
+    f1_treino = round(resultados['train_f1'].mean(),4) * 100
+    precision_teste = round(resultados['test_precision'].mean(),4) * 100
+    precision_treino = round(resultados['train_precision'].mean(),4) * 100
+    recall_teste = round(resultados['test_recall'].mean(),4) * 100
+    recall_treino = round(resultados['train_recall'].mean(),4) * 100
+
+    acuracia = [acuracia_teste, acuracia_treino]
+    f1 = [f1_teste, f1_treino]
+    precision = [precision_teste, precision_treino]
+    recall = [recall_teste, recall_treino]
+
+    index = ['Média do Teste', 'Média do Treino']
+    columns = ['Acurácia', 'Precisão', 'Recall', 'F1']
+    df = pd.DataFrame(index = index, columns = columns)
+
+    df['Acurácia'] = acuracia
+    df['F1'] = f1
+    df['Precisão'] = precision
+    df['Recall'] = recall
+
+    return df
+```
+
+```pyton
+from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import cross_validate
+
+
+def validacao_cruzada(modelo):
+    scoring = ['accuracy','f1', 'precision','recall']
+    cv = StratifiedKFold(n_splits = 10)
+    resultados = cross_validate(modelo, X, y, cv = cv, return_train_score=True, scoring = scoring)
+    metricas = dataframe_metricas(resultados)
+    return metricas
+```
+
+```python
+SEED = 42
+
+modelo = RandomForestClassifier(random_state = SEED)
+teste = validacao_cruzada(modelo)
+teste.style.format('{:.2f} %')
+```
+
+Com a validação cruzada efetuada, foi constatado o *overfitting* do modelo dentro dos grupos de treino. Para corrigir isso e melhorar o resultado para os dados de teste, foi efetuada uma otimização nos hiper parâmetros do modelo.
 
 ### RandomizedSearchCV
 
