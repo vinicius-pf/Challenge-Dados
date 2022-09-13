@@ -27,6 +27,12 @@ Além disso, a tabela final teve as colunas traduzidas para o português e salva
 
 ### Semana 2 Aprendendo com os dados
 
+Após o tratamento dos dados em SQL e exportação da tabela para um arquivo csv, a empresa requisitou que fosse criado um modelo de machine learning capaz de prever se um empréstimo irá sofrer ou não inadimplência. A empresa percebeu que há um alto número de empréstimos concedidos que sofrem inadimplência.
+
+Para isso, os dados foram importados e tratados utilizando as bibliotecas Pandas, Imbalanced-Learn e Scikit-Learn. Os modelos foram criados, avaliados e comparados de acordo com métricas especializadas.
+
+O modelo que trouxe as melhores métricas foi então otimizado e exportado por meio de um arquivo pickle.
+
 ### Semana 3 e 4 - Analisando métricas
 
 ## Entre em contato
