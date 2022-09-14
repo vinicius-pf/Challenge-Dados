@@ -62,7 +62,7 @@ Além do tratamento da coluna que será a chave primária, também há a necessi
 
 ### Tabela `id`
 
-Essa tabela relaciona os IDs de cada tabela. Ela contém 14952 registros e 3 colunas.
+Essa tabela relaciona os IDs de cada tabela. Ela contém 34489 registros e 3 colunas.
 
 | Feature | Descrição | Característica
 | --- | --- | --- |
@@ -295,7 +295,7 @@ Ao final do tratamento, a tabela ficou com 34121 registros.
 
 ### Tabela `id`
 
-Essa tabela relaciona as outras 3 tabelas entre si e as colunas são chaves estrangeiras que se conectam com as chaves primárias de cada tabela. Ao tentar criar as chaves estrangeiras, um erro aconteceu por haver inconsistência de dados entre as tabelas. Haviam alguns registros na tabela ID que não estavam nas outras tabelas. Ao executar o script, foi percebido que haviam 571 dados que deveriam ser excluídos.
+Essa tabela relaciona as outras 3 tabelas entre si e as colunas são chaves estrangeiras que se conectam com as chaves primárias de cada tabela. Ao tentar criar as chaves estrangeiras, um erro aconteceu por haver inconsistência de dados entre as tabelas. Haviam alguns registros na tabela ID que não estavam nas outras tabelas. Ao executar o script, foi percebido que haviam 1365 dados que deveriam ser excluídos.
 
 ```sql
 SELECT count(person_id) AS faltantes_totais FROM id 
@@ -332,7 +332,7 @@ Com as configurações de chaves primárias e estrangeiras criadas, o relacionam
 
 ![18](https://user-images.githubusercontent.com/6025360/187934507-0917273f-ec06-4a41-8469-0a9ca38aa83f.png)
 
-Após as correções, a tabela ficou com 14381 registros.
+Após as correções, a tabela ficou com 33124 registros.
 
 ### Próximos passos
 
@@ -350,7 +350,7 @@ INNER JOIN emprestimos em USING (loan_id)
 INNER JOIN historicos_banco hb USING (cb_id))
 ```
 
-Como a tabela `id` possue um número de registros menor que as outras colunas, essa tabela de união também recebeu menos registros, terminando com 14381 valores. Caso seja necessário, podem ser feitos outros tipos de JOIN. 
+Como a tabela `id` possue um número de registros menor que as outras colunas, essa tabela de união também recebeu menos registros, terminando com 33124 valores. Caso seja necessário, podem ser feitos outros tipos de JOIN. 
 
 ## Corrigindo inconsistências da tabela de união
 
@@ -381,7 +381,7 @@ Apesar do nome das colunas ter sido traduzido, os registros em lingua inglesa n�
 ### Encontrando valores em branco
 
 #### Coluna `renda_percentual`
-Essa coluna pode ser calculada utilizando as colunas `salario_anual` e `valor_emprestimo`. Os dados que estavam em branco foram corrigidos se a pessoa possuía as duas informações. Em 27 casos não foi possível inserir os dados e por isso os registros foram excluídos da tabela.
+Essa coluna pode ser calculada utilizando as colunas `salario_anual` e `valor_emprestimo`. Os dados que estavam em branco foram corrigidos se a pessoa possuía as duas informações. Em 56 casos não foi possível inserir os dados e por isso os registros foram excluídos da tabela.
 
 ```sql
 UPDATE dados_inner SET	renda_percentual = valor_emprestimo / salario_anual 
@@ -392,7 +392,7 @@ DELETE FROM dados_inner where renda_percentual is null;
 
 #### Coluna `salario_anual`
 
-Assim como a coluna anterior, esta coluna pode ser calculada utilizando outras colunas da tabela. Após o cálculo, ainda haviam 11 registros em branco que foram excluídos.
+Assim como a coluna anterior, esta coluna pode ser calculada utilizando outras colunas da tabela. Após o cálculo, ainda haviam 30 registros em branco que foram excluídos.
 
 ```sql
 UPDATE dados_inner SET	salario_anual = valor_emprestimo / renda_percentual 
@@ -422,7 +422,7 @@ SELECT count(*) from dados_inner where taxa_juros is null
 
 ![image](https://user-images.githubusercontent.com/6025360/188207750-0fab8a4c-7187-420b-a15a-d203455379ac.png)
 
-Após a limpeza das colunas calculadas, a base de dados ficou com 14343 registros.
+Após a limpeza das colunas calculadas, a base de dados ficou com 33068 registros.
 
 ## Exportando 'csv'
 Para as próximas etapas do projeto, será necessário exportar a tabela de união para um arquivo csv. Para isso foi utilizado o assistente do MySQL. Durante a exortação foram excluídas as colunas `dm_id`, `em_id` e `hb_id` por possuírem alta cardinalidade. A tabela final pode ser conferida [aqui](link)

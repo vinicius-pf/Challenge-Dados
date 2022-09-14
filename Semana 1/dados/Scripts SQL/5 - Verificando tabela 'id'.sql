@@ -46,6 +46,3 @@ ALTER TABLE id
 ADD CONSTRAINT FK_HISTORICOS_BANCO
 FOREIGN KEY (cb_id) REFERENCES historicos_banco (cb_id);
 
-
-
-

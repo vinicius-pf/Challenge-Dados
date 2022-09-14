@@ -2,6 +2,7 @@ USE ANALISE_RISCO;
 
 #Selecionando a tabela
 SELECT * FROM dados_inner;
+SELECT COUNT(*) FROM DADOS_INNER;
 
 #Tradução colunas
 ALTER TABLE dados_inner
